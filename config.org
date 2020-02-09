@@ -1,0 +1,567 @@
+#+Title: My Literate Emacs Configuration
+#+Author: Cem Eröncel
+#+PROPERTY: header-args :tangle init.el
+
+This is my personal Emacs configuration written in literate
+programming style with ~org-mode~. 
+
+* Prerequisites
+
+This section lists the steps which need to be done in the operating
+system before loading this configuration file.
+
+Partial list of things which need to be added here:
+- [ ] LaTeX
+- [ ] Python
+- [ ] Source Code Pro Fonts
+
+* Modifying Built-In Settings
+
+This section contains modifications to built-in settings in Emacs
+which do not require any third-party packages.
+
+** Storing custom settings in an external file
+
+By default, the customizations done by the Customize interface are
+stored in the ~init.el~ file. This clutters the ~init.el~, so I prefer
+to store them in a different file called ~custom.el~.
+
+#+BEGIN_SRC emacs-lisp
+  ;; Create `custom.el' if it is not created before. 
+  (defconst custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (unless (file-exists-p custom-file)
+    (write-region "" nil custom-file))
+
+  ;; Load `custom.el'
+  (load custom-file t)
+#+END_SRC
+
+** Backups
+
+By default, Emacs saves backup files in the current directory. These
+are the files ending in ~~~ which clutter directory listings. I want
+to store them in another folder, ~~/.emacs.d/backups~. The following
+code puts them there.
+
+#+BEGIN_SRC emacs-lisp
+  ;; Create the `backups' directory if it is not created before.
+  (defconst backup-dir (concat user-emacs-directory "backups"))
+  (unless (directory-name-p backup-dir)
+    (make-directory backup-dir t))
+
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+  (setq delete-old-versions -1)
+  (setq version-control t)
+  (setq vc-make-backup-files t)
+  (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+#+END_SRC
+
+** Sentences
+
+For some reason, Emacs thinks that the sentences do end with double
+spaces. This setting will make them end with a single space.
+
+#+BEGIN_SRC emacs-lisp
+  (setq sentence-end-double-space nil)
+#+END_SRC
+
+** Yes/No to Y/N
+
+Typing "y" or "n" should suffice instead of writing "yes" or "no".
+
+#+BEGIN_SRC emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+** UTF-8
+
+Use UTF-8 coding system whenever possible. Taken from the
+[[https://www.masteringemacs.org/article/working-coding-systems-unicode-emacs][MasteringEmacs]] article.
+
+#+BEGIN_SRC emacs-lisp
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+#+END_SRC
+
+
+
+** Disabling Some UI Elements
+
+Disable toolbar.
+
+#+BEGIN_SRC emacs-lisp
+  (tool-bar-mode -1)
+#+END_SRC
+
+Disable the scrollbar.
+
+#+BEGIN_SRC emacs-lisp
+  (scroll-bar-mode -1)
+#+END_SRC
+
+Don't show the splash screen.
+
+#+begin_src emacs-lisp
+  (setq inhibit-splash-screen t)
+#+end_src
+
+** More secure Emacs
+
+#+BEGIN_SRC emacs-lisp
+(setq gnutls-verify-error t)
+(setq tls-checktrust t)
+#+END_SRC
+
+** Font Configuration
+
+The following code sets the font name and the size. I am using the
+[[https://github.com/adobe-fonts/source-code-pro][Source Code Pro]] fonts from Adobe. I also add a touch of line spacing.
+
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist
+               '(font . "Source Code Pro-11"))
+  (setq line-spacing 3)
+#+end_src
+
+** More intuitive scrolling
+
+The first two commands improve the scrolling behavior when using the
+mouse wheel or the touch pad. The last one disables the jumping
+behavior when using the keyboard for scrolling. I might need to
+experiment with the number.
+
+#+BEGIN_SRC emacs-lisp
+  (setq mouse-wheel-scroll-amount '(1))
+  (setq mouse-wheel-progressive-speed nil)
+  (setq scroll-conservatively 101)
+#+END_SRC
+
+** Winner mode
+
+Emacs has a built-in mode which remembers the window configurations so
+we can quickly return to a previous state. The keybinding is ~C-c
+<arrow-keys>~. 
+
+#+BEGIN_SRC emacs-lisp
+  (winner-mode t)
+#+END_SRC
+
+** Highlight matching parentheses
+
+The built-in ~show-paren-mode~ highlights the matching parentheses
+which is essential in most programming modes. 
+
+#+BEGIN_SRC emacs-lisp
+  (show-paren-mode 1)
+#+END_SRC
+
+* Package Management
+
+Emacs can and should be extended with excellent third-party packages.
+To install and organize these packages, we need a package manager.
+Emacs has built-in ~package.el~, but I heard very good things about
+[[https://github.com/raxod502/straight.el][straight.el]]. So I will give it a try. 
+
+First we set it up using the bootstrap code in the website.
+
+#+begin_src emacs-lisp
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+#+end_src
+
+Now we have a package manager, but we still need a way to organize our
+packages and settings for them. John Wiegley's [[https://github.com/jwiegley/use-package][use-package]] is a
+perfect solution for this. Below we will install it using
+~straight.el~, and then set a variable such that ~use-package~ always
+uses ~straight.el~ for package installations. 
+
+#+BEGIN_SRC emacs-lisp
+  ;; Install use-package using straight.el
+  (straight-use-package 'use-package)
+
+  ;; Always use use-package
+  (setq straight-use-package-by-default t)
+#+END_SRC
+
+* Org
+
+In this section, we will install the latest version of ~org-mode~ and
+do all the customizations. 
+
+** Install latest org
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :straight org-plus-contrib)
+
+#+END_SRC
+
+** Clean View
+
+Here, our goal is to get a cleaner and nicer view for our org-mode
+documents. The commands below do
+
+- Enable the ~auto-fill-mode~ in all org buffers.
+- Enable the ~org-indent-mode~ which indents text according to outline
+  structure.
+- Get rid of emphasis markers.
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook 'auto-fill-mode)
+  (setq org-startup-indented t)
+  (setq org-hide-emphasis-markers t)
+#+END_SRC
+
+** Source Code
+
+Fontify the code inside the source blocks.
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t)
+#+END_SRC
+
+* UI
+
+In this section we will apply some eye candy to Emacs.
+
+** Theming
+
+The [[https://github.com/hlissner/emacs-doom-themes][emacs-doom-themes]] is an excellent repository of various dark and
+light themes for Emacs. I am using ~doom-dracula~.
+
+#+begin_src emacs-lisp
+  (use-package doom-themes
+    :after org
+    :config
+    ;; Global settings (defaults)
+    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+    (load-theme 'doom-dracula t)
+
+    ;; Enable flashing mode-line on errors
+    (doom-themes-visual-bell-config)
+  
+    ;; Enable custom neotree theme (all-the-icons must be installed!)
+    ;; (doom-themes-neotree-config)
+    ;; or for treemacs users
+    ;; (setq doom-themes-treemacs-theme "doom-colors") ; use the colorful treemacs theme
+    ;; (doom-themes-treemacs-config)
+  
+    ;; Corrects (and improves) org-mode's native fontification.
+    (doom-themes-org-config))
+#+end_src
+
+** Fancy icons
+
+The [[https://github.com/domtronn/all-the-icons.el][all-the-icons]] package contains which can be used in various places
+in Emacs, such as the modeline or dired. Be sure to run ~M-x
+all-the-icons-instal-fonts~ after installing this package.
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons
+    :config
+    ;; all the icons doesn't work without font-lock
+    ;; and font-lock+ doesn't have autoloads
+    (use-package font-lock+
+      :straight (:host github :repo "emacsmirror/font-lock-plus")
+      :config (require 'font-lock+)))
+#+end_src
+
+We also want to use these icons in ~dired~. 
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons-dired
+    :after all-the-icons
+    :hook (dired-mode . all-the-icons-dired-mode))
+#+end_src
+
+** Modline
+
+Ideally we should use the [[https://github.com/seagle0128/doom-modeline][doom-modline]] which matches with our theme
+perfectly. But for some reason, the ~org-mode~ files give a
+fontification error when using the ~doom-modline~. Therefore, I am using
+the [[https://github.com/TheBB/spaceline][spaceline]] theme from [[https://www.spacemacs.org/][Spacemacs]]. 
+
+#+begin_src emacs-lisp
+  (use-package spaceline
+    :config
+    (require 'spaceline-config)
+    (spaceline-emacs-theme)
+    )
+#+end_src
+
+** Diminish
+
+If a major or minor mode is enabled, Emacs shows them at the mode
+line. Although this might be helpful, it might also clutter the mode
+line. The [[https://github.com/myrjola/diminish.el][diminish]] mode allows hiding of minor modes for a cleaner
+mode line. 
+
+#+BEGIN_SRC emacs-lisp
+  (use-package diminish)
+#+END_SRC
+
+** Rainbow Delimeters
+
+The [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] package colors the matching parantheses for
+easier debugging. This script will install it and enable in
+programming modes.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+END_SRC
+
+* Completion
+
+** Ivy/Swiper/Counsel
+
+[[https://github.com/abo-abo/swiper][Ivy]] is a generic completion mechanism for Emacs, similar to [[http://tuhdo.github.io/helm-intro.html][HELM]]. It
+automatically installs ~swiper~ and ~counsel~.
+
+#+begin_src emacs-lisp
+  (use-package ivy
+    :diminish ivy-mode
+    :config
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t)
+    )
+
+  (use-package swiper
+    :after ivy
+    :bind ("\C-s" . swiper))
+
+  (use-package counsel
+    :after ivy
+    :bind(
+          ("C-c c-r" . ivy-resume)
+          ("<f6>" . ivy-resume)
+          ("M-x" . counsel-M-x)
+          ("C-x C-f" . counsel-find-file)
+          ("<f1> f" . counsel-describe-function)
+          ("<f1> v" . counsel-describe-variable)
+          ("<f1> l" . counsel-find-library)
+          ))
+#+end_src
+
+** Company
+
+Next we need a auto-completion engine. We will stick it with [[https://company-mode.github.io/][company]].
+This command will install. For now, we enable it only for the
+~prog-mode~. We also change some keybindings and some default settings. 
+
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+                ("C-n" . company-select-next)
+                ("C-p" . company-select-previous))
+    :config
+    (setq company-idle-delay 0)
+    (setq company-minimum-prefix-length 3)
+    )
+#+END_SRC
+
+* Tools
+
+This section contains the tools which greatly enchances the Emacs
+experience. 
+
+** Which-key
+
+The [[https://github.com/justbur/emacs-which-key][which-key]] package brings up help on key combinations. It is an
+excellent tool to discover keyboard shortcuts.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :diminish which-key-mode
+    :config
+    (which-key-mode))
+#+END_SRC
+
+** Avy
+
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :bind ("M-s" . avy-goto-char))
+#+END_SRC
+
+** YASnippets
+
+[[https://github.com/joaotavora/yasnippet][YASnippet]] is a template system for Emacs. I haven't use it so far, but
+I think I should give it a serious try. Therefore I am enabling it
+globally.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet)
+#+END_SRC
+
+We should also install some snippets. A nice collection can be found
+in the [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]] package.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet-snippets)
+#+END_SRC
+
+** Window Management
+
+Default window switching command in Emacs, ~other-window~, works OK for
+two windows, but it quickly loses its efficiency when working more
+than two windows. The [[https://github.com/abo-abo/ace-window][ace-window]] package provides a nicer way to
+switch windows, if there are more then two. Following the
+instructions, I bound it to ~M-o~ key. 
+
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :bind ("M-o" . ace-window))
+#+end_src
+
+** Undo-tree
+
+Emacs's undo system allows use any past state to be recovered.
+However, the built-in system is confusing and hard to use. Instead of
+treating the undo/redo as a linear sequence, the ~undo-tree-mode~ from
+the [[https://www.emacswiki.org/emacs/UndoTree][undo-tree]] package treats the undo history as a branching tree of
+changes, which is much more intuitive and easy to use. 
+
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :diminish undo-tree-mode
+    :config
+    (global-undo-tree-mode))
+#+end_src
+
+The ~undo-tree-visualize~ command is very useful for this, and it is by
+default bound to ~C-x u~. 
+
+** Expand region
+
+The [[https://github.com/magnars/expand-region.el][expand-region]] package increases the selected region by semantic
+units. It is extremely useful, and is a must-have package in this
+config.
+
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+#+end_src
+
+** Multiple cursors
+
+Another great package from the autor of the ~expand-region~ package. It
+adds the [[https://github.com/magnars/multiple-cursors.el][multiple cursors]] functionality to Emacs. 
+
+#+begin_src emacs-lisp
+  (use-package multiple-cursors
+    :bind (("C->" . mc/mark-next-like-this)
+           ("C-<" . mc/mark-previous-like-this)
+           ("C-c C-<" . mc/mark-all-like-this)))
+#+end_src
+
+** Projectile
+
+[[https://projectile.readthedocs.io/en/latest/][Projectile]] is a project interaction and management library in Emacs.
+It is another must-have for optimum Emacs experience. The
+configuration code below is directly taken from the [[https://projectile.readthedocs.io/en/latest/installation/][installation
+manual]]. 
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :config
+    (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (projectile-mode +1))
+#+end_src
+
+** Magit
+
+[[https://magit.vc/][Magit]] is an interface to the version control system Git, implemented
+in Emacs. I am currently using a very small subset of it, due to my
+lack of Git knowledge, but even with that it is extremely useful.
+
+#+begin_src emacs-lisp
+  (use-package magit
+    :bind ("C-x g" . magit-status))
+#+end_src
+
+** Smartparens
+
+The [[https://github.com/Fuco1/smartparens][smartparens]] is a minor mode for dealing pairs in Emacs. 
+
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :diminish smartparens-mode
+    :config
+    (require 'smartparens-config)
+    (smartparens-global-mode))
+#+end_src
+
+* LaTeX
+
+** AucTeX Setup
+
+#+begin_src emacs-lisp
+  (use-package tex
+    :straight auctex
+    :defer t
+    :config
+    (setq TeX-auto-save t)
+    (setq TeX-parse-self t)
+    (setq-default TeX-master nil))
+#+end_src
+
+** Reference Management (RefTeX)
+
+#+begin_src emacs-lisp
+  (setq reftex-plug-into-AUCTeX t)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex) ; with AUCTeX LaTeX mode
+  (add-hook 'latex-mode-hook 'turn-on-reftex) ; with Emacs latex mode
+  (setq reftex-bibliography-commands '("bibliography" "nobibliography" "addbibresource"))
+#+end_src
+
+** CDLaTeX
+
+#+begin_src emacs-lisp
+  (use-package cdlatex
+    :hook(
+          (LaTeX-mode . turn-on-cdlatex)
+          (latex-mode . turn-on-cdlatex))
+    )
+#+end_src
+
+* Programming
+
+** C/C++ 
+
+For C/C++ programming, we follow the steps outline in Uncle Dave's
+[[https://www.youtube.com/watch?v=XeWZfruRu6k][tutorial.]] First we install ~clang~ to our system. In Ubuntu 18.04 this
+can be done ~sudo apt install clang~. Then we install the [[https://github.com/Sarcasm/irony-mode][irony]] package. 
+
+#+begin_src emacs-lisp
+  (use-package irony
+    :hook ((c++-mode-hook . irony-mode)
+           (c-mode-hook . irony-mode)
+           (irony-mode-hook . irony-cdb-autosetup-compile-options)))
+#+end_src
+
+Now we ~irony~ bindings to ~company~. 
+
+#+begin_src emacs-lisp
+  (use-package company-irony
+    :config
+    (require 'company)
+    (add-to-list 'company-backends 'company-irony))
+#+end_src
