@@ -37,7 +37,7 @@
 (setq tls-checktrust t)
 
 (add-to-list 'default-frame-alist
-             '(font . "Source Code Pro-11"))
+             '(font . "Ubuntu Mono-12"))
 (setq line-spacing 3)
 
 (setq mouse-wheel-scroll-amount '(1))

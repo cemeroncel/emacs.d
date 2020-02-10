@@ -122,7 +122,7 @@ The following code sets the font name and the size. I am using the
 
 #+begin_src emacs-lisp
   (add-to-list 'default-frame-alist
-               '(font . "Source Code Pro-11"))
+               '(font . "Ubuntu Mono-12"))
   (setq line-spacing 3)
 #+end_src
 
