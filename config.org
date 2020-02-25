@@ -233,6 +233,22 @@ Fontify the code inside the source blocks.
   (setq org-src-fontify-natively t)
 #+END_SRC
 
+** Reference Management
+
+The [[https://github.com/jkitchin/org-ref][org-ref]] package from [[https://kitchingroup.cheme.cmu.edu/][John Kitchin]] is an excellent to manage
+citations, cross-references, and bibliographies in ~org-mode~. 
+
+#+begin_src emacs-lisp
+  (use-package org-ref
+    :config
+    (setq reftex-default-bibliography "~/Dropbox/Bibliography/references.bib")
+    (setq org-ref-bibliography-notes "~/Dropbox/Bibliography/notes.org")
+    (setq org-ref-default-bibliography "~/Dropbox/Bibliography/references.bib")
+    (setq org-ref-pdf-directory "~/Dropbox/Bibliography/pdfs/")
+    (setq bibtex-completion-pdf-open-function 'org-open-file)
+    (setq org-ref-completion-library 'org-ref-ivy-cite))
+#+end_src
+
 * UI
 
 In this section we will apply some eye candy to Emacs.
