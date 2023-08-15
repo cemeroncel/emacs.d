@@ -1,0 +1,10 @@
+/auto-save-list
+/backups
+/eln-cache
+/elpa
+/var
+/.cache
+
+custom.el
+history
+recentf
