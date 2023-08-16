@@ -99,6 +99,7 @@
 (add-to-list 'load-path ce/modules-directory)
 
 ;; List of custom modules
+(require 'ce-biblio)                    ; Bibliography management in Emacs
 (require 'ce-colors)                    ; make Emacs more colorful
 (require 'ce-completion)		; modern completion mechanism
 (require 'ce-defaults)			; better defaults for Emacs
