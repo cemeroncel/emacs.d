@@ -254,7 +254,7 @@ See also `org-save-all-org-buffers'"
                                   ))
                                 ))
   :config
-  (customize-set-variable 'org-directory "~/Documents/Org/")
+  ;; (customize-set-variable 'org-directory "~/Documents/Org/")
   ;; Babel languages
   ;; (org-babel-do-load-languages
   ;;  'org-babel-load-languages
