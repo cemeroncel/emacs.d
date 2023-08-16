@@ -50,9 +50,9 @@
 ;; the custom.el file, but at the same time the customizations that we
 ;; miss in our configuration are loaded as well.
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(when (and custom-file
-	   (file-exists-p custom-file))
-  (load custom-file nil 'nomessage))
+;; (when (and custom-file
+;; 	   (file-exists-p custom-file))
+;;   (load custom-file nil 'nomessage))
 
 
 ;; Use the `no-littering' package to keep the emacs directory
