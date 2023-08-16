@@ -24,6 +24,8 @@
 ;;; Commentary
 (defvar ce/bibliography-locations '("~/Documents/MyZotero/library.bib")
   "List of .bib file locations.")
+(when (string-equal (system-name) "titus")
+  (setq ce/bibliography-locations '("~/Documents/MyZotero/library-titus.bib")))
 
 (use-package citar
   :ensure t
