@@ -22,11 +22,13 @@
 ;; along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary
+;;;; Definitions
 (defvar ce/bibliography-locations '("~/Documents/MyZotero/library.bib")
   "List of .bib file locations.")
 (when (string-equal (system-name) "titus")
   (setq ce/bibliography-locations '("~/Documents/MyZotero/library-titus.bib")))
 
+;;;; Citar
 (use-package citar
   :ensure t
   :custom
@@ -48,7 +50,43 @@
   :no-require
   :config (citar-embark-mode))
 
-
+;;;; citar-denote
+;; This auxilliary package integrates the Citar with Denote.
+(use-package citar-denote
+  :ensure t
+  :after citar denote
+  :bind (
+         ;; Create a new bibliographic note.
+         ("C-c n c c" . citar-create-note)
+         ;; Open existing bibliographic note.
+         ("C-c n c o" . citar-denote-open-note)
+         ;; Open attachments, URLs or other associated notes.
+         ("C-c n c d" . citar-denote-dwim)
+         ;; Convert existing notes to bibliographic notes
+         ("C-c n c a" . citar-denote-add-citekey)
+         ;; Remove references from bibliographic notes
+         ("C-c n c k" . citar-denote-remove-citekey)
+         ;; Open bibliographic source file
+         ("C-c n c e" . citar-denote-open-reference-entry)
+         ;; Find Denote file citing the current reference(s)
+         ("C-c n c r" . citar-denote-find-reference)
+         ;; Find a citation in Denote files
+         ("C-c n c f" . citar-denote-find-citation)
+         ;; Cite entries not referenced or cited in any note
+         ("C-c n c n" . citar-denote-cite-nocite)
+         ;; Create a new note for entries not referenced or cited in any note.
+         ("C-c n c m" . citar-denote-reference-nocite)
+         ;; Link to a bibliographic note
+         ("C-c n c l" . citar-denote-link-reference)
+         )
+  :custom
+  ;; The default name for a new note. `nil' means the BibTeX citation key.
+  (citar-denote-title-format nil)
+  ;; Offer to create notes even for keys that already have notes.
+  (citar-open-always-create-notes t)
+  :config
+  (citar-denote-mode)
+  )
 
 ;;; Code
 
