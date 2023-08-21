@@ -96,6 +96,7 @@
 (require 'ce-denote)                    ; Note taking Prot's way
 (require 'ce-git)                       ; Magit
 (require 'ce-help)                      ; More helpful help buffers
+(require 'ce-lang-python)               ; Python configuration
 (require 'ce-latex)                     ; for doing science
 ;; (require 'ce-markdown)             ; for README
 (require 'ce-org)                       ; Org Mode configuration
