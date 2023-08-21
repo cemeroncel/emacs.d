@@ -74,11 +74,20 @@
   )
 
 ;;;; Font configuration
+(defvar ce/font-height 130
+  "Font height that will be passed to `set-face-attribute'.")
+
+(when (string-equal (system-name) "titus")
+  (setq ce/font-height 140))
+
 ;; Main typeface
-(set-face-attribute 'default nil :family "Iosevka" :height 130)
+(set-face-attribute 'default nil :family "Iosevka" :height ce/font-height)
 
 ;; Proportionately spaced typeface
-(set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 130)
+(if (string-equal (system-name) "titus")
+    (set-face-attribute 'variable-pitch nil :family "Iosevka Etoile" :height ce/font-height)
+  (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height ce/font-height)
+  )
 
 ;; Monospaced typeface
 (set-face-attribute 'fixed-pitch nil :family (face-attribute 'default :family))
@@ -90,6 +99,7 @@
 (add-to-list 'load-path ce/modules-directory)
 
 ;; List of custom modules
+(require 'ce-biblio)                    ; Bibliography management in Emacs
 (require 'ce-colors)                    ; make Emacs more colorful
 (require 'ce-completion)		; modern completion mechanism
 (require 'ce-defaults)			; better defaults for Emacs
