@@ -32,7 +32,8 @@
 (defvar ce/default-conda-environment "base"
   "Name of the conda environment that will be activated at startup.")
 
-(when (string-equal ))
+(when (string-equal (system-name) "tuxedus")
+  (setq ce/default-conda-environment "sci"))
 
 (customize-set-variable 'python-shell-interpreter
                         (expand-file-name ce/python-shell-interpreter-path))
@@ -61,9 +62,9 @@
   ;; if you want interactive shell support, include:
   (conda-env-initialize-interactive-shells)
   ;; if you want eshell support, include:
-  (conda-env-initialize-eshell ce/default-conda-environment)
+  (conda-env-initialize-eshell)
   ;; Activate the default environment right away
-  (conda-env-activate)
+  (conda-env-activate ce/default-conda-environment)
   )
 
 ;; To insert numpydoc style docstrings
