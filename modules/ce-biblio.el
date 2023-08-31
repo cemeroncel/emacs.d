@@ -31,10 +31,20 @@
 ;;;; Citar
 (use-package citar
   :ensure t
+  ;; Replace the impossible to remember C-c C-x C-@ keybinding to
+  ;; insert a citation in org-mode.
+  :bind
+  (:map org-mode-map :package org ("C-c b" . #'org-cite-insert))
   :custom
   ;; Set the locations of the .bib files.
   (citar-bibliography ce/bibliography-locations)
 
+  ;; Org-mode related settings
+  (org-cite-global-bibliography ce/bibliography-locations)
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  
   ;; Configure the `completion-at-point' function to complete citation
   ;; keys in the buffer.
   :hook
