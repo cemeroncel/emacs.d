@@ -104,6 +104,7 @@
 (require 'ce-completion)		; modern completion mechanism
 (require 'ce-defaults)			; better defaults for Emacs
 (require 'ce-denote)                    ; Note taking Prot's way
+(require 'ce-eglot)                     ; Turn Emacs into an IDE
 (require 'ce-git)                       ; Magit
 (require 'ce-help)                      ; More helpful help buffers
 (require 'ce-lang-python)               ; Python configuration
