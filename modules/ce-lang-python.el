@@ -26,14 +26,15 @@
 ;;; Code
 
 ;; Use the `ipython3' shell in the `sci' environment
-(defvar ce/python-shell-interpreter-path "~/mambaforge/envs/sci/bin/ipython3"
+(defvar ce/python-shell-interpreter-path "~/mambaforge/bin/ipython3"
   "Path to the default `python-shell-interpreter'.")
 
 (defvar ce/default-conda-environment "base"
   "Name of the conda environment that will be activated at startup.")
 
 (when (string-equal (system-name) "tuxedus")
-  (setq ce/default-conda-environment "sci"))
+  (setq ce/default-conda-environment "sci")
+  (setq ce/python-shell-interpreter-path "~/mambaforge/envs/sci/bin/ipython3"))
 
 (customize-set-variable 'python-shell-interpreter
                         (expand-file-name ce/python-shell-interpreter-path))
