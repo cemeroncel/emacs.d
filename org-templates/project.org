@@ -1,0 +1,16 @@
+* ACTIVE %?
+:PROPERTIES:
+:CATEGORY: %?
+:END:
+
+** Goals
+
+Define the goals of the project here.
+
+- [ ] %?
+
+** Tasks
+
+*** NEXT Add a next action for the project ${title}
+
+** Notes
